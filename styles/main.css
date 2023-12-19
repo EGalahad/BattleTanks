@@ -16,18 +16,18 @@ body {
   /* center */
   position: absolute;
   left: 35%;
-  bottom: 0;
   width: 30%;
+  bottom: 0;
   height: 6%;
 
   /* style text */
   text-align: center;
   font-size: 12px;
-  font-family:  'Playfair Display';
+  font-family: 'Playfair Display';
 
   /* color text */
   color: #444;
-  background-color: rgba(253, 240, 140, 0.7);
+  background-color: rgba(251, 236, 127, 0.7);
 
   z-index: 2;
 }
