@@ -9,17 +9,7 @@ import { PBar } from "../../utils/PBar.js";
 class Tank extends MovableObject {
   mesh: THREE.Group;
   bboxParameter = { width: 30, height: 50, depth: 30, };
-  // movement attributes
-  proceedSpeed: number = 100;
-  rotationSpeed: number = 1;
-
-  // state attributes
   health: number = 100;
-  attack: number = 10;
-  defense: number = 0;
-  bulletUpgraded: boolean = false;
-  penetrationUpgraded: boolean = false;
-  penetrationPermitted: boolean = false;
 
   // bullet configuration
   bulletLocalPos: THREE.Vector3 = new THREE.Vector3(0, 40, 20);
@@ -42,21 +32,33 @@ class Tank extends MovableObject {
   // other assets
   bullet_mesh: THREE.Group;
   listeners: THREE.AudioListener[];
-  audio: AudioBuffer;
+  audio: { [key: string]: AudioBuffer };
 
-  originalColor: any;
+  originalColor: THREE.Color;
+  originalPos: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
+  originalRot: THREE.Euler = new THREE.Euler(0, 0, 0);
 
   healthBarFillElement: HTMLElement;
   healthBarValueElement: HTMLElement;
+  powerupsContainerElement: HTMLElement;
 
   // poweup is responsible for creating powerup pbar elements and hooks
   // tank tick is responsible for checking if the powerup is expired and remove it
-  powerupsContainerElement: HTMLElement;
   powerups: { [key: string]: PBar } = {};
   powerupPostHooks: { [key: string]: (tank: Tank) => void } = {};
+  
+  // powerup related state variables
+  attack: number = 10;
+  defense: number = 0;
+  bulletUpgraded: boolean = false;
+  penetrationUpgraded: boolean = false;
+  penetrationPermitted: boolean = false;
+  proceedSpeed: number = 100;
+  rotateSpeed: number = 1;
 
   constructor(name: string, tank_mesh: THREE.Group | null,
-    bullet_mesh: THREE.Group | null, listeners: THREE.AudioListener[] | null, audio: any | null, config: Partial<Tank> = {}) {
+    bullet_mesh: THREE.Group | null, listeners: THREE.AudioListener[] | null, 
+    audio: { [key: string]: AudioBuffer } | null, config: Partial<Tank> = {}) {
     super("tank", name);
     Object.assign(this, config);
 
@@ -79,6 +81,9 @@ class Tank extends MovableObject {
     if (name == "player2") {
       this.mesh.translateX(40);
     }
+
+    this.originalPos = this.mesh.position.clone();
+    this.originalRot = this.mesh.rotation.clone();
 
     if (listeners != null) {
       this.listeners = listeners;
@@ -109,12 +114,12 @@ class Tank extends MovableObject {
     const tank_object_tmp = new Tank("temp", null, null, null, null);
     tank_object_tmp.mesh.applyMatrix4(this.mesh.matrix);
     tank_object_tmp.mesh.translateY(this.proceed * this.proceedSpeed);
-    tank_object_tmp.mesh.rotateZ(this.rotate * this.rotationSpeed);
+    tank_object_tmp.mesh.rotateZ(this.rotate * this.rotateSpeed);
     tank_object_tmp.mesh.updateMatrix();
 
     if (this.penetrationUpgraded) {
       this.mesh.translateY(this.proceed * this.proceedSpeed);
-      this.mesh.rotateZ(this.rotate * this.rotationSpeed);
+      this.mesh.rotateZ(this.rotate * this.rotateSpeed);
       return
     }
 
@@ -124,7 +129,7 @@ class Tank extends MovableObject {
     
     if (this.penetrationPermitted || not_collided) {
       this.mesh.translateY(this.proceed * this.proceedSpeed);
-      this.mesh.rotateZ(this.rotate * this.rotationSpeed);
+      this.mesh.rotateZ(this.rotate * this.rotateSpeed);
 
       this.penetrationPermitted = !not_collided;
     }
@@ -208,6 +213,10 @@ class Tank extends MovableObject {
         return;
       }
     });
+
+    if (this.health <= 0) {
+      this.reset();
+    }
   }
 
   static onTick(tank: Tank, delta: number) { };
@@ -218,6 +227,22 @@ class Tank extends MovableObject {
     }
     this._updateHealthAndPowerups(delta);
     Tank.onTick(this, delta);
+  }
+
+  reset() {
+    this.mesh.position.copy(this.originalPos);
+    this.mesh.rotation.copy(this.originalRot);
+    this.health = 100;
+    this.attack = 10;
+    this.defense = 0;
+    this.bulletUpgraded = false;
+    this.penetrationUpgraded = false;
+    this.penetrationPermitted = false;
+    this.mesh.children[0].traverse((child) => {
+      if (child instanceof THREE.Mesh && child.material) {
+        child.material.color.copy(this.originalColor);
+      }
+    });
   }
 
   addPowerup(type: string, timeout: number, priorHook: (tank: Tank) => void, postHook: (tank: Tank) => void) {

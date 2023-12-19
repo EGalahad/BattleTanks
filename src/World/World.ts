@@ -29,16 +29,16 @@ class World {
     tanks: Tank[] = [];
     bullets: Bullet[] = [];
 
-    containers: HTMLElement[];
-    cameras: ThirdPersonViewCamera[];
-    renderers: Renderer[];
+    containers: HTMLElement[] = [];
+    cameras: ThirdPersonViewCamera[] = [];
+    renderers: Renderer[] = [];
     loop: Loop;
 
-    mesh: { [key: string]: THREE.Group } = {};
-    audio: { [key: string]: AudioBuffer } = {};
-    textures: { [key: string]: THREE.Texture } = {};
+    meshDict: { [key: string]: THREE.Group } = {};
+    audioDict: { [key: string]: AudioBuffer } = {};
+    textureDict: { [key: string]: THREE.Texture } = {};
+
     listeners: THREE.AudioListener[] = [];
-    bgAudios: THREE.Audio[] = [];
 
     // HTML elements
     sceneContainer: HTMLElement;
@@ -63,7 +63,7 @@ class World {
         await new Promise(resolve => setTimeout(resolve, 1000));
         this.scene = new Scene();
 
-        this.ground = new Ground("main", this.textures);
+        this.ground = new Ground("main", this.textureDict);
         this.scene.add(this.ground);
 
         this.hemiLight = new HemiSphereLight("main");
@@ -79,9 +79,6 @@ class World {
         this.powerups.forEach(powerup => this.scene.add(powerup));
         this.tanks.forEach(tank => this.scene.add(tank));
 
-        this.containers = [];
-        this.cameras = [];
-        this.renderers = [];
         for (let i = 0; i < this.tanks.length; i++) {
             const container_sub = this.sceneContainer.getElementsByClassName("sub-container")[i] as HTMLElement;
             this.tanks[i].post_init(container_sub);
@@ -98,12 +95,11 @@ class World {
 
             // add listener to the camera
             const listener = new THREE.AudioListener();
-            const bgAudio = new THREE.Audio(listener);
             camera.camera.add(listener);
-            camera.camera.add(bgAudio);
-
             this.listeners.push(listener);
-            this.bgAudios.push(bgAudio);
+
+            const bgAudio = new THREE.Audio(listener);
+            bgAudio.setBuffer(this.audioDict["bgm"]).setLoop(true).play();
         }
 
         // mix the two listeners
@@ -169,7 +165,7 @@ class World {
     loadAssets() {
         const loader = new GLTFLoader();
         loader.load('assets/tank_model_new/scene.gltf', (gltf) => {
-            this.mesh["Tank"] = gltf.scene;
+            this.meshDict["Tank"] = gltf.scene;
         },
             (xhr) => {
                 console.log("Tank: " + (xhr.loaded / xhr.total) * 100 + '% loaded')
@@ -179,7 +175,7 @@ class World {
             });
 
         loader.load('assets/bullet_model/scene.gltf', (gltf) => {
-            this.mesh["Bullet"] = gltf.scene;
+            this.meshDict["Bullet"] = gltf.scene;
         },
             (xhr) => {
                 console.log("Bullet: ", (xhr.loaded / xhr.total) * 100 + '% loaded')
@@ -189,7 +185,7 @@ class World {
             });
 
         loader.load('assets/powerup_model/scene.gltf', (gltf) => {
-            this.mesh["Powerup"] = gltf.scene;
+            this.meshDict["Powerup"] = gltf.scene;
         },
             (xhr) => {
                 console.log("Powerup: ", (xhr.loaded / xhr.total) * 100 + '% loaded')
@@ -201,33 +197,33 @@ class World {
 
         const audioLoader = new THREE.AudioLoader();
         audioLoader.load('assets/audio/powerup.mp3', (buffer) => {
-            this.audio["Powerup"] = buffer;
+            this.audioDict["Powerup"] = buffer;
         });
         audioLoader.load('assets/audio/bullet_hit.mp3', (buffer) => {
-            this.audio["Bullet_hit"] = buffer;
+            this.audioDict["Bullet_hit"] = buffer;
         });
         audioLoader.load('assets/audio/explosion.mp3', (buffer) => {
-            this.audio["Explosion"] = buffer;
+            this.audioDict["Explosion"] = buffer;
         });
 
                 const textureLoader = new THREE.TextureLoader();
         textureLoader.load('assets/grassy-meadow1-bl/grassy-meadow1_albedo.png', (texture) => {
-            this.textures["albedo"] = texture;
+            this.textureDict["albedo"] = texture;
         });
         textureLoader.load('assets/grassy-meadow1-bl/grassy-meadow1_ao.png', (texture) => {
-            this.textures["ao"] = texture;
+            this.textureDict["ao"] = texture;
         });
         textureLoader.load('assets/grassy-meadow1-bl/grassy-meadow1_height.png', (texture) => {
-            this.textures["height"] = texture;
+            this.textureDict["height"] = texture;
         });
         textureLoader.load('assets/grassy-meadow1-bl/grassy-meadow1_metallic.png', (texture) => {
-            this.textures["metallic"] = texture;
+            this.textureDict["metallic"] = texture;
         });
         textureLoader.load('assets/grassy-meadow1-bl/grassy-meadow1_normal-ogl.png', (texture) => {
-            this.textures["normal"] = texture;
+            this.textureDict["normal"] = texture;
         });
         textureLoader.load('assets/grassy-meadow1-bl/grassy-meadow1_roughness.png', (texture) => {
-            this.textures["roughness"] = texture;
+            this.textureDict["roughness"] = texture;
         });
 
     }
@@ -319,23 +315,23 @@ class World {
 
     initializePowerups(powerups: Powerup[]) {
         const healthPowerup = new HealthPowerup("main",
-            this.mesh["Powerup"].children[0].children[0].children[0].children[9] as THREE.Group, new THREE.Vector3(100, 0, 15),
-            this.listeners, this.audio["Powerup"]);
+            this.meshDict["Powerup"].children[0].children[0].children[0].children[9] as THREE.Group, new THREE.Vector3(100, 0, 15),
+            this.listeners, this.audioDict["Powerup"]);
         const weaponPowerup = new WeaponPowerup("main",
-            this.mesh["Powerup"].children[0].children[0].children[0].children[1] as THREE.Group, new THREE.Vector3(-100, 0, 15),
-            this.listeners, this.audio["Powerup"]);
+            this.meshDict["Powerup"].children[0].children[0].children[0].children[1] as THREE.Group, new THREE.Vector3(-100, 0, 15),
+            this.listeners, this.audioDict["Powerup"]);
         const speedPowerup = new SpeedPowerup("main",
-            this.mesh["Powerup"].children[0].children[0].children[0].children[13] as THREE.Group, new THREE.Vector3(0, 100, 15),
-            this.listeners, this.audio["Powerup"]);
+            this.meshDict["Powerup"].children[0].children[0].children[0].children[13] as THREE.Group, new THREE.Vector3(0, 100, 15),
+            this.listeners, this.audioDict["Powerup"]);
         const attackPowerup = new AttackPowerup("main",
-            this.mesh["Powerup"].children[0].children[0].children[0].children[5] as THREE.Group, new THREE.Vector3(0, -100, 15),
-            this.listeners, this.audio["Powerup"]);
+            this.meshDict["Powerup"].children[0].children[0].children[0].children[5] as THREE.Group, new THREE.Vector3(0, -100, 15),
+            this.listeners, this.audioDict["Powerup"]);
         const defensePowerup = new DefensePowerup("main",
-            this.mesh["Powerup"].children[0].children[0].children[0].children[3] as THREE.Group, new THREE.Vector3(100, 100, 15),
-            this.listeners, this.audio["Powerup"]);
+            this.meshDict["Powerup"].children[0].children[0].children[0].children[3] as THREE.Group, new THREE.Vector3(100, 100, 15),
+            this.listeners, this.audioDict["Powerup"]);
         const penetrationPowerup = new PenetrationPowerup("main",
-            this.mesh["Powerup"].children[0].children[0].children[0].children[7] as THREE.Group, new THREE.Vector3(-100, -100, 15),
-            this.listeners, this.audio["Powerup"]);
+            this.meshDict["Powerup"].children[0].children[0].children[0].children[7] as THREE.Group, new THREE.Vector3(-100, -100, 15),
+            this.listeners, this.audioDict["Powerup"]);
 
         powerups.push(healthPowerup);
         powerups.push(weaponPowerup);
@@ -346,14 +342,14 @@ class World {
     }
 
     initializeTanks(tanks: Tank[]) {
-        const tank1 = new Tank("player1", this.mesh["Tank"], this.mesh["Bullet"], this.listeners, this.audio, {
+        const tank1 = new Tank("player1", this.meshDict["Tank"], this.meshDict["Bullet"], this.listeners, this.audioDict, {
             proceedUpKey: "KeyW",
             proceedDownKey: "KeyS",
             rotateLeftKey: "KeyA",
             rotateRightKey: "KeyD",
             firingKey: "Space",
         });
-        const tank2 = new Tank("player2", this.mesh["Tank"], this.mesh["Bullet"], this.listeners, this.audio);
+        const tank2 = new Tank("player2", this.meshDict["Tank"], this.meshDict["Bullet"], this.listeners, this.audioDict);
         tanks.push(tank1);
         tanks.push(tank2);
     }

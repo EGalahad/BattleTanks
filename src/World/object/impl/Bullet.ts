@@ -9,14 +9,14 @@ import { checkCollisionBulletWithTank, checkCollisionBulletWithWall } from "../.
 class Bullet extends MovableObject {
   mesh: THREE.Group
   listeners: THREE.AudioListener[];
-  audio: AudioBuffer;
+  audio: { [key: string]: AudioBuffer };
 
   vel: THREE.Vector3;
   accel: THREE.Vector3;
   attack: number;
 
   constructor(name: string, pos: THREE.Vector3, vel: THREE.Vector3, attack: number,
-    mesh: THREE.Group, rotation: THREE.Euler, listeners: THREE.AudioListener[], audio: AudioBuffer) {
+    mesh: THREE.Group, rotation: THREE.Euler, listeners: THREE.AudioListener[], audio: { [key: string]: AudioBuffer }) {
     super("bullet", name);
 
     this.mesh = new THREE.Group();

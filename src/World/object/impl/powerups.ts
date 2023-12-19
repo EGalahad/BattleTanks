@@ -143,11 +143,11 @@ class SpeedPowerup extends TimeoutPowerup {
   }
   PriorHook(tank: Tank): void {
     tank.proceedSpeed = tank.proceedSpeed * 2;
-    tank.rotationSpeed = tank.rotationSpeed * 1.5;
+    tank.rotateSpeed = tank.rotateSpeed * 1.5;
   }
   PostHook(tank: Tank): void {
     tank.proceedSpeed = tank.proceedSpeed / 2;
-    tank.rotationSpeed = tank.rotationSpeed / 1.5;
+    tank.rotateSpeed = tank.rotateSpeed / 1.5;
   }
 }
 
