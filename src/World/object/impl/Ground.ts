@@ -4,7 +4,7 @@ import * as THREE from "three";
 class Ground extends BaseObject {
   mesh: THREE.Mesh;
   planeSize: number;
-  constructor(name: string) {
+  constructor(name: string, textures: { [key: string]: THREE.Texture}) {
     super("ground", name);
     function repeat_texture(
       texture: THREE.Texture,
@@ -15,26 +15,13 @@ class Ground extends BaseObject {
       texture.wrapT = THREE.RepeatWrapping;
       texture.repeat.set(num_S, num_T);
     }
-    // Create a texture loader
-    var textureLoader = new THREE.TextureLoader();
-    var albedoTexture = textureLoader.load(
-      "/assets/grassy-meadow1-bl/grassy-meadow1_albedo.png"
-    );
-    var aoTexture = textureLoader.load(
-      "/assets/grassy-meadow1-bl/grassy-meadow1_ao.png"
-    );
-    var heightTexture = textureLoader.load(
-      "/assets/grassy-meadow1-bl/grassy-meadow1_height.png"
-    );
-    var metallicTexture = textureLoader.load(
-      "/assets/grassy-meadow1-bl/grassy-meadow1_metallic.png"
-    );
-    var normalTexture = textureLoader.load(
-      "/assets/grassy-meadow1-bl/grassy-meadow1_normal-ogl.png"
-    );
-    var roughnessTexture = textureLoader.load(
-      "/assets/grassy-meadow1-bl/grassy-meadow1_roughness.png"
-    );
+
+    const albedoTexture = textures["albedo"];
+    const aoTexture = textures["ao"];
+    const heightTexture = textures["height"];
+    const metallicTexture = textures["metallic"];
+    const normalTexture = textures["normal"];
+    const roughnessTexture = textures["roughness"];
 
     repeat_texture(albedoTexture, 10, 10);
     repeat_texture(aoTexture, 10, 10);
