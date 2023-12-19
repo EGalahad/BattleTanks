@@ -37,8 +37,8 @@ class World {
     mesh: { [key: string]: THREE.Group } = {};
     audio: { [key: string]: AudioBuffer } = {};
     textures: { [key: string]: THREE.Texture } = {};
-    listener: THREE.AudioListener;
-    bgAudio: THREE.Audio;
+    listeners: THREE.AudioListener[] = [];
+    bgAudios: THREE.Audio[] = [];
 
     // HTML elements
     sceneContainer: HTMLElement;
@@ -71,10 +71,6 @@ class World {
         this.scene.add(this.hemiLight);
         this.scene.add(this.directLight);
 
-        this.listener = new THREE.AudioListener();
-        // Create a global audio source
-        this.bgAudio = new THREE.Audio(this.listener);
-
         this.initializeWalls(this.walls);
         this.initializePowerups(this.powerups);
         this.initializeTanks(this.tanks);
@@ -89,6 +85,7 @@ class World {
         for (let i = 0; i < this.tanks.length; i++) {
             const container_sub = this.sceneContainer.getElementsByClassName("sub-container")[i] as HTMLElement;
             this.tanks[i].post_init(container_sub);
+            this.containers.push(container_sub);
 
             // create camera and renderer
             const camera = new ThirdPersonViewCamera(this.tanks[i], window.innerWidth / window.innerHeight / this.tanks.length);
@@ -96,11 +93,36 @@ class World {
             renderer.renderer.setSize(window.innerWidth / this.tanks.length, window.innerHeight);
             container_sub.appendChild(renderer.renderer.domElement);
 
-            this.containers.push(container_sub);
             this.cameras.push(camera);
             this.renderers.push(renderer);
+
+            // add listener to the camera
+            const listener = new THREE.AudioListener();
+            const bgAudio = new THREE.Audio(listener);
+            camera.camera.add(listener);
+            camera.camera.add(bgAudio);
+
+            this.listeners.push(listener);
+            this.bgAudios.push(bgAudio);
         }
-        this.cameras[0].camera.add(this.listener);
+
+        // mix the two listeners
+
+        // const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        // const audioDestination = audioContext.createMediaStreamDestination();
+        // const audioStream = audioDestination.stream;
+        // // add listeners to the audio tracks
+        // this.listeners.forEach(listener => {
+        //     const audioSource = listener.context.createMediaStreamSource(audioStream);
+        //     audioSource.connect(listener.context.destination);
+        // });
+
+        this.listeners.forEach((listener, index) => {
+            const panner = listener.context.createStereoPanner();
+            panner.pan.value = index === 0 ? -1 : 1; // -1 for left, 1 for right
+            panner.connect(listener.context.destination);
+        });
+
 
         Tank.onTick = (tank: Tank, delta: number) => {
             tank.update(this.keyboard, this.scene, this.tanks, this.walls, this.bullets, delta);
@@ -298,22 +320,22 @@ class World {
     initializePowerups(powerups: Powerup[]) {
         const healthPowerup = new HealthPowerup("main",
             this.mesh["Powerup"].children[0].children[0].children[0].children[9] as THREE.Group, new THREE.Vector3(100, 0, 15),
-            this.listener, this.audio["Powerup"]);
+            this.listeners, this.audio["Powerup"]);
         const weaponPowerup = new WeaponPowerup("main",
             this.mesh["Powerup"].children[0].children[0].children[0].children[1] as THREE.Group, new THREE.Vector3(-100, 0, 15),
-            this.listener, this.audio["Powerup"]);
+            this.listeners, this.audio["Powerup"]);
         const speedPowerup = new SpeedPowerup("main",
             this.mesh["Powerup"].children[0].children[0].children[0].children[13] as THREE.Group, new THREE.Vector3(0, 100, 15),
-            this.listener, this.audio["Powerup"]);
+            this.listeners, this.audio["Powerup"]);
         const attackPowerup = new AttackPowerup("main",
             this.mesh["Powerup"].children[0].children[0].children[0].children[5] as THREE.Group, new THREE.Vector3(0, -100, 15),
-            this.listener, this.audio["Powerup"]);
+            this.listeners, this.audio["Powerup"]);
         const defensePowerup = new DefensePowerup("main",
             this.mesh["Powerup"].children[0].children[0].children[0].children[3] as THREE.Group, new THREE.Vector3(100, 100, 15),
-            this.listener, this.audio["Powerup"]);
+            this.listeners, this.audio["Powerup"]);
         const penetrationPowerup = new PenetrationPowerup("main",
             this.mesh["Powerup"].children[0].children[0].children[0].children[7] as THREE.Group, new THREE.Vector3(-100, -100, 15),
-            this.listener, this.audio["Powerup"]);
+            this.listeners, this.audio["Powerup"]);
 
         powerups.push(healthPowerup);
         powerups.push(weaponPowerup);
@@ -324,14 +346,14 @@ class World {
     }
 
     initializeTanks(tanks: Tank[]) {
-        const tank1 = new Tank("player1", this.mesh["Tank"], this.mesh["Bullet"], this.listener, this.audio, {
+        const tank1 = new Tank("player1", this.mesh["Tank"], this.mesh["Bullet"], this.listeners, this.audio, {
             proceedUpKey: "KeyW",
             proceedDownKey: "KeyS",
             rotateLeftKey: "KeyA",
             rotateRightKey: "KeyD",
             firingKey: "Space",
         });
-        const tank2 = new Tank("player2", this.mesh["Tank"], this.mesh["Bullet"], this.listener, this.audio);
+        const tank2 = new Tank("player2", this.mesh["Tank"], this.mesh["Bullet"], this.listeners, this.audio);
         tanks.push(tank1);
         tanks.push(tank2);
     }

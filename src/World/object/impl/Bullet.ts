@@ -8,7 +8,7 @@ import { checkCollisionBulletWithTank, checkCollisionBulletWithWall } from "../.
 
 class Bullet extends MovableObject {
   mesh: THREE.Group
-  listener: THREE.AudioListener;
+  listeners: THREE.AudioListener[];
   audio: AudioBuffer;
 
   vel: THREE.Vector3;
@@ -16,7 +16,7 @@ class Bullet extends MovableObject {
   attack: number;
 
   constructor(name: string, pos: THREE.Vector3, vel: THREE.Vector3, attack: number,
-    mesh: THREE.Group, rotation: THREE.Euler, listener: THREE.AudioListener, audio: AudioBuffer) {
+    mesh: THREE.Group, rotation: THREE.Euler, listeners: THREE.AudioListener[], audio: AudioBuffer) {
     super("bullet", name);
 
     this.mesh = new THREE.Group();
@@ -29,7 +29,7 @@ class Bullet extends MovableObject {
     this.mesh.receiveShadow = false;
     this.mesh.position.copy(pos);
 
-    this.listener = listener;
+    this.listeners = listeners;
     this.audio = audio;
 
     this.vel = vel;
@@ -41,8 +41,10 @@ class Bullet extends MovableObject {
   update(ground: Ground, bullets: Bullet[], walls: Wall[], tanks: Tank[], delta: number) {
     // if outof the map or hit a wall, delete from the scene
     if (this.mesh.position.z < 0 || walls.some(wall => checkCollisionBulletWithWall(this, wall) || !ground.inBoundary(this.mesh.position))) {
-      const sound = new THREE.Audio(this.listener);
-      sound.setBuffer(this.audio["Bullet_hit"]).play();
+      this.listeners.forEach(listener => {
+        const sound = new THREE.PositionalAudio(listener);
+        sound.setBuffer(this.audio["Bullet_hit"]).play();
+      });
 
       this.destruct(bullets);
       return;
@@ -52,8 +54,10 @@ class Bullet extends MovableObject {
     // create an explosion, apply damage
     for (let tank of tanks) {
       if (checkCollisionBulletWithTank(this, tank)) {
-        const sound = new THREE.Audio(this.listener);
-        sound.setBuffer(this.audio["Explosion"]).play();
+        this.listeners.forEach(listener => {
+          const sound = new THREE.PositionalAudio(listener);
+          sound.setBuffer(this.audio["Bullet_hit"]).play();
+        });
 
         this.destruct(bullets);
         tank.GetAttacked(this.attack);

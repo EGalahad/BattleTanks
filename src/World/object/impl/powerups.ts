@@ -6,7 +6,7 @@ import { checkCollisionPowerupWithTank } from "../../utils/collision";
 abstract class Powerup extends MovableObject {
   powerup_type: string;
   mesh: THREE.Group;
-  listener: THREE.AudioListener;
+  listeners: THREE.AudioListener[];
   audio: AudioBuffer;
 
   rotationSpeed: number = 2;
@@ -15,7 +15,7 @@ abstract class Powerup extends MovableObject {
   zBounds: number[] = [10, 20];
   changeZDirection: boolean = false;
 
-  constructor(name: string, type: string, mesh: THREE.Group, pos: THREE.Vector3, listener: THREE.AudioListener, audio: AudioBuffer) {
+  constructor(name: string, type: string, mesh: THREE.Group, pos: THREE.Vector3, listeners: THREE.AudioListener[], audio: AudioBuffer) {
     super(`powerup-${type}`, name);
     this.powerup_type = type;
 
@@ -25,15 +25,17 @@ abstract class Powerup extends MovableObject {
     this.mesh.children[0].rotation.x = Math.PI / 2;
     this.mesh.position.copy(pos);
 
-    this.listener = listener;
+    this.listeners = listeners;
     this.audio = audio;
   }
 
   update(powerups: Powerup[], tanks: Tank[]) {
     for (const tank of tanks) {
       if (checkCollisionPowerupWithTank(this, tank)) {
-        const sound = new THREE.Audio(this.listener);
-        sound.setBuffer(this.audio).play();
+        this.listeners.forEach(listener => {
+          const sound = new THREE.PositionalAudio(listener);
+          sound.setBuffer(this.audio).play();
+        });
 
         this.apply(tank);
         this.destruct(powerups);
@@ -86,8 +88,8 @@ abstract class Powerup extends MovableObject {
 }
 
 class HealthPowerup extends Powerup {
-  constructor(name: string, mesh: THREE.Group, pos: THREE.Vector3, listener: THREE.AudioListener, audio: AudioBuffer) {
-    super(name, "health", mesh, pos, listener, audio);
+  constructor(name: string, mesh: THREE.Group, pos: THREE.Vector3, listeners: THREE.AudioListener[], audio: AudioBuffer) {
+    super(name, "health", mesh, pos, listeners, audio);
   }
 
   apply(tank_object: Tank): void {
@@ -102,8 +104,8 @@ abstract class TimeoutPowerup extends Powerup {
   timeout: number;
 
   constructor(name: string, type: string, mesh: THREE.Group, pos: THREE.Vector3,
-    listener: THREE.AudioListener, audio: AudioBuffer, timeout: number) {
-    super(name, type, mesh, pos, listener, audio);
+    listeners: THREE.AudioListener[], audio: AudioBuffer, timeout: number) {
+    super(name, type, mesh, pos, listeners, audio);
     this.timeout = timeout;
   }
 
@@ -118,8 +120,8 @@ abstract class TimeoutPowerup extends Powerup {
 
 class WeaponPowerup extends TimeoutPowerup {
   constructor(name: string, mesh: THREE.Group, pos: THREE.Vector3,
-    listener: THREE.AudioListener, audio: AudioBuffer) {
-    super(name, "weapon", mesh, pos, listener, audio, 10000);
+    listeners: THREE.AudioListener[], audio: AudioBuffer) {
+    super(name, "weapon", mesh, pos, listeners, audio, 10000);
   }
 
   PriorHook(tank: Tank): void {
@@ -136,8 +138,8 @@ class SpeedPowerup extends TimeoutPowerup {
   // rotateBoost: number = 1.5;
 
   constructor(name: string, mesh: THREE.Group, pos: THREE.Vector3,
-    listener: THREE.AudioListener, audio: AudioBuffer) {
-    super(name, "speed", mesh, pos, listener, audio, 10000);
+    listeners: THREE.AudioListener[], audio: AudioBuffer) {
+    super(name, "speed", mesh, pos, listeners, audio, 10000);
   }
   PriorHook(tank: Tank): void {
     tank.proceedSpeed = tank.proceedSpeed * 2;
@@ -151,8 +153,8 @@ class SpeedPowerup extends TimeoutPowerup {
 
 class DefensePowerup extends TimeoutPowerup {
   constructor(name: string, mesh: THREE.Group, pos: THREE.Vector3,
-    listener: THREE.AudioListener, audio: AudioBuffer) {
-    super(name, "defense", mesh, pos, listener, audio, 10000);
+    listeners: THREE.AudioListener[], audio: AudioBuffer) {
+    super(name, "defense", mesh, pos, listeners, audio, 10000);
   }
   PriorHook(tank: Tank): void {
     tank.defense = 0.5;
@@ -164,8 +166,8 @@ class DefensePowerup extends TimeoutPowerup {
 
 class AttackPowerup extends TimeoutPowerup {
   constructor(name: string, mesh: THREE.Group, pos: THREE.Vector3,
-    listener: THREE.AudioListener, audio: AudioBuffer) {
-    super(name, "attack", mesh, pos, listener, audio, 10000);
+    listeners: THREE.AudioListener[], audio: AudioBuffer) {
+    super(name, "attack", mesh, pos, listeners, audio, 10000);
   }
   PriorHook(tank: Tank): void {
     tank.attack *= 2;
@@ -177,8 +179,8 @@ class AttackPowerup extends TimeoutPowerup {
 
 class PenetrationPowerup extends TimeoutPowerup {
   constructor(name: string, mesh: THREE.Group, pos: THREE.Vector3,
-    listener: THREE.AudioListener, audio: AudioBuffer) {
-    super(name, "penetration", mesh, pos, listener, audio, 10000);
+    listeners: THREE.AudioListener[], audio: AudioBuffer) {
+    super(name, "penetration", mesh, pos, listeners, audio, 10000);
   }
   PriorHook(tank: Tank): void {
     tank.penetrationUpgraded = true;
