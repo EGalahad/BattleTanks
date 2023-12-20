@@ -14,7 +14,7 @@
   height: 100%;
 
   background-color: #86e21c;
-  border-radius: 5px;
+  border-radius: 1vh;
 
   /* center the text */
   display: flex;
@@ -22,7 +22,7 @@
   justify-content: center;
 
   /* style the text */
-  font-size: 1em;
+  font-size: 2vh;
   font-weight: bold;
   color: #444;
 }
@@ -33,7 +33,7 @@
   width: 60%;
   height: 100%;
 
-  border-radius: 5px;
+  border-radius: 1vh;
 }
 
 .health__value {
@@ -43,7 +43,7 @@
   height: 100%;
 
   background-color: #86e21c;
-  border-radius: 5px;
+  border-radius: 1vh;
 
 
   /* center the text */
@@ -52,7 +52,7 @@
   justify-content: center;
 
   /* style the text */
-  font-size: 1em;
+  font-size: 2vh;
   font-weight: bold;
   color: #444;
 }
@@ -80,7 +80,7 @@
   /* position the weapon bar */
   position: relative;
 
-  margin-top: 10px;
+  margin-top: 1vh;
   width: 100%;
   height: 2.5%;
 }
@@ -93,7 +93,7 @@
   height: 100%;
 
   background-color: #86e21c;
-  border-radius: 5px;
+  border-radius: 1vh;
 
   /* center the text */
   display: flex;
@@ -101,7 +101,7 @@
   justify-content: center;
 
   /* style the text */
-  font-size: 1em;
+  font-size: 2vh;
   font-weight: bold;
   color: #444;
 }
@@ -112,7 +112,7 @@
   width: 60%;
   height: 100%;
 
-  border-radius: 5px;
+  border-radius: 1vh;
 }
 
 .powerup__value {
@@ -122,7 +122,7 @@
   height: 100%;
 
   background-color: #86e21c;
-  border-radius: 5px;
+  border-radius: 1vh;
 
   /* center the text */
   display: flex;
@@ -130,7 +130,7 @@
   justify-content: center;
 
   /* style the text */
-  font-size: 1em;
+  font-size: 2vh;
   font-weight: bold;
   color: #444;
 }
@@ -141,6 +141,6 @@
   width: 0%;
   height: 100%;
   background-color: #db0808;
-  border-radius: 5px;
+  border-radius: 1vh;
   transition: width 16.7ms ease-in-out;
 }

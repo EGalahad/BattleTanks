@@ -11,31 +11,35 @@
 }
 
 .header h1 {
-  position: relative;
+  position: absolute;
+  top: 10vh;
+  left: 35vw;
   display: inline-block;
   font-family: 'Playfair Display';
-  font-size: 10em;
-  line-height: 1;
-  margin: 0.3em 0;
-  letter-spacing: -0.025em;
-  /* color: #d1b790; */
+  font-size: 10vw;
   color: #ce1a1a;
+
+  margin: 0 0 0 4vw;
 
   z-index: inherit;
 }
 
 .header h1 span {
-  font-size: 0.8em;
   font-style: italic;
   display: block;
-  margin: 0 0 -0.2em -1em;
-  letter-spacing: 0px;
+  margin: 0 0 -3vh -20vw;
+  font-size: 7vw;
 
   z-index: inherit;
 }
 
 .header h2 {
-  font-size: 1em;
+  position: absolute;
+  top: 65vh;
+  width: 100vw;
+
+  text-align: center;
+  font-size: 1vw;
   margin: 0em 0;
   white-space: nowrap;
   text-indent: 1em;
@@ -54,6 +58,8 @@
   text-align: center;
   text-transform: uppercase;
   pointer-events: none;
+
+  font-size: 1.25vw;
 }
 
 .message--replay {
@@ -68,7 +74,7 @@
 
 .message--instructions {
   font-family: 'Playfair Display';
-  font-size: 1.5em;
+  font-size: 1.25vw;
   bottom: 30%;
   letter-spacing: 0.2em;
   color: #68c3c0;

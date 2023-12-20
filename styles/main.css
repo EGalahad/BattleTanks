@@ -15,15 +15,17 @@ body {
 .footer {
   /* center */
   position: absolute;
-  left: 35%;
-  width: 30%;
+  left: 30%;
+  width: 40%;
   bottom: 0;
-  height: 6%;
+  height: 4vh;
 
   /* style text */
   text-align: center;
-  font-size: 12px;
+  font-size: 2vh;
   font-family: 'Playfair Display';
+
+  line-height: 0%;
 
   /* color text */
   color: #444;
@@ -61,10 +63,10 @@ body {
 
 .splitter {
   position: absolute;
-  left: 50%;
+  left: 49.75vw;
 
   height: 100%;
-  width: 5px;
+  width: 0.5vw;
 
   background-color: black;
 }
