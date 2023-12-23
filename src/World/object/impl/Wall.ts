@@ -14,6 +14,11 @@ class Wall extends BaseObject {
     this.mesh.rotation.set(rotation.x, rotation.y, rotation.z);
     this.mesh.receiveShadow = true;
   }
+
+  destruct() {
+    this.mesh.geometry.dispose();
+    this.mesh.parent?.remove(this.mesh);
+  }
 }
 
 export { Wall };

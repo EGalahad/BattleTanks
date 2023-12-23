@@ -8,6 +8,7 @@ Its interaction with other componenets in the scene are listed below:
 5. The tank can be collect powerups that can change its mobility and firepower, and health.
 */
 import * as THREE from "three";
+import { disposeMeshes } from "../utils/mesh";
 
 abstract class BaseObject {
   type: string;
@@ -17,6 +18,11 @@ abstract class BaseObject {
   constructor(type: string, name: string) {
     this.type = type;
     this.name = name;
+  }
+
+  destruct() {
+    this.mesh.parent?.remove(this.mesh);
+    disposeMeshes(this.mesh);
   }
 }
 

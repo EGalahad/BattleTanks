@@ -40,6 +40,10 @@ class PBar {
       this.element.remove();
     }
   }
+
+  remove() {
+    this.element.remove();
+  }
 }
 
 export { PBar }

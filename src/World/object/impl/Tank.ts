@@ -30,7 +30,7 @@ class Tank extends MovableObject {
   firingKeyPressed: boolean = false;
 
   // other assets
-  bullet_mesh: THREE.Group;
+  bullet_mesh: THREE.Object3D;
   listeners: THREE.AudioListener[];
   audio: { [key: string]: AudioBuffer };
 
@@ -56,8 +56,8 @@ class Tank extends MovableObject {
   proceedSpeed: number = 100;
   rotateSpeed: number = 1;
 
-  constructor(name: string, tank_mesh: THREE.Group | null,
-    bullet_mesh: THREE.Group | null, listeners: THREE.AudioListener[] | null, 
+  constructor(name: string, tank_mesh: THREE.Object3D | null,
+    bullet_mesh: THREE.Object3D | null, listeners: THREE.AudioListener[] | null, 
     audio: { [key: string]: AudioBuffer } | null, config: Partial<Tank> = {}) {
     super("tank", name);
     Object.assign(this, config);
@@ -70,8 +70,10 @@ class Tank extends MovableObject {
           this.originalColor = child.material.color.clone();
       });
       this.mesh.children[0].scale.set(15, 15, 15);
-      this.mesh.children[0].rotation.x = Math.PI / 2;
-      this.mesh.children[0].rotation.y = Math.PI;
+      this.mesh.children[0].rotation.x = 0;
+      this.mesh.children[0].rotation.y = 0;
+      this.mesh.children[0].rotation.z = Math.PI;
+
 
       this.mesh.castShadow = true;
       this.mesh.receiveShadow = true;
@@ -243,6 +245,9 @@ class Tank extends MovableObject {
         child.material.color.copy(this.originalColor);
       }
     });
+    Object.values(this.powerups).forEach(pbar => pbar.remove());
+    this.powerups = {};
+    this.powerupPostHooks = {};
   }
 
   addPowerup(type: string, timeout: number, priorHook: (tank: Tank) => void, postHook: (tank: Tank) => void) {

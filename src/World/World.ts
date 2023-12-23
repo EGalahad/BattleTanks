@@ -7,7 +7,7 @@ import { Ground } from "./object/impl/Ground";
 import { HemiSphereLight, DirectionalLight } from "./object/impl/lights";
 
 import { Wall } from "./object/impl/Wall";
-import { Powerup, HealthPowerup, WeaponPowerup, SpeedPowerup, AttackPowerup, DefensePowerup, PenetrationPowerup } from "./object/impl/powerups";
+import { Powerup, HealthPowerup, WeaponPowerup, SpeedPowerup, AttackPowerup, DefensePowerup, PenetrationPowerup, GoalPowerup } from "./object/impl/powerups";
 import { Tank } from "./object/impl/Tank";
 import { Bullet } from "./object/impl/Bullet";
 
@@ -34,7 +34,7 @@ class World {
     renderers: Renderer[] = [];
     loop: Loop;
 
-    meshDict: { [key: string]: THREE.Group } = {};
+    meshDict: { [key: string]: THREE.Object3D } = {};
     audioDict: { [key: string]: AudioBuffer } = {};
     textureDict: { [key: string]: THREE.Texture } = {};
 
@@ -45,6 +45,10 @@ class World {
     menu: HTMLElement;
     replay: HTMLElement;
     instructions: HTMLElement;
+    player_left_win_banner: HTMLElement;
+    player_right_win_banner: HTMLElement;
+    player_left_lost_banner: HTMLElement;
+    player_right_lost_banner: HTMLElement;
 
     keyboard: { [key: string]: number } = {};
 
@@ -57,6 +61,10 @@ class World {
         this.menu = document.getElementById("menu") as HTMLElement;
         this.replay = document.getElementById("replayMessage") as HTMLElement;
         this.instructions = document.getElementById("instructions") as HTMLElement;
+        this.player_left_win_banner = document.getElementById("player1-win-banner") as HTMLElement;
+        this.player_right_win_banner = document.getElementById("player2-win-banner") as HTMLElement;
+        this.player_left_lost_banner = document.getElementById("player1-lose-banner") as HTMLElement;
+        this.player_right_lost_banner = document.getElementById("player2-lose-banner") as HTMLElement;
 
         this.loadAssets();
 
@@ -71,12 +79,7 @@ class World {
         this.scene.add(this.hemiLight);
         this.scene.add(this.directLight);
 
-        this.initializeWalls(this.walls);
-        this.initializePowerups(this.powerups);
         this.initializeTanks(this.tanks);
-
-        this.walls.forEach(wall => this.scene.add(wall));
-        this.powerups.forEach(powerup => this.scene.add(powerup));
         this.tanks.forEach(tank => this.scene.add(tank));
 
         for (let i = 0; i < this.tanks.length; i++) {
@@ -119,6 +122,42 @@ class World {
             panner.connect(listener.context.destination);
         });
 
+        this.loop = new Loop(this.scene, this.cameras, this.renderers);
+
+        this.reset();
+        this.start();
+
+        fadeBackGround(this.menu, 1, 0.7, false, 1500);
+        this.status = "paused";
+        this.registerEventHandlers();
+
+        // force resize
+        window.dispatchEvent(new Event("resize"));
+    }
+
+    reset() {
+        this.tanks.forEach(tank => tank.reset());
+
+        const powerups_index = this.loop.updatableLists.indexOf(this.powerups);
+        if (powerups_index !== -1) this.loop.updatableLists.splice(powerups_index, 1);
+        const bullet_index = this.loop.updatableLists.indexOf(this.bullets);
+        if (bullet_index !== -1) this.loop.updatableLists.splice(bullet_index, 1);
+
+        this.walls.forEach(wall => wall.destruct());
+        this.powerups.forEach(powerup => powerup.destruct());
+        this.bullets.forEach(bullet => bullet.destruct());
+
+        this.walls = [];
+        this.powerups = [];
+        this.bullets = [];
+
+        this.initializeWalls(this.walls);
+        this.initializePowerups(this.powerups);
+        this.walls.forEach(wall => this.scene.add(wall));
+        this.powerups.forEach(powerup => this.scene.add(powerup));
+
+        this.loop.updatableLists.push(this.powerups);
+        this.loop.updatableLists.push(this.bullets);
 
         Tank.onTick = (tank: Tank, delta: number) => {
             tank.update(this.keyboard, this.scene, this.tanks, this.walls, this.bullets, delta);
@@ -131,19 +170,6 @@ class World {
         Powerup.onTick = (powerup: Powerup, delta: number) => {
             powerup.update(this.powerups, this.tanks);
         }
-
-        this.loop = new Loop(this.scene, this.cameras, this.renderers);
-        this.loop.updatableLists.push(this.powerups);
-        this.loop.updatableLists.push(this.bullets);
-
-        this.start();
-
-        fadeBackGround(this.menu, 1, 0.7, false, 1500);
-        this.status = "paused";
-        this.registerEventHandlers();
-
-        // force resize
-        window.dispatchEvent(new Event("resize"));
     }
 
     start() {
@@ -152,20 +178,22 @@ class World {
 
     pause() {
         const tanks_index = this.loop.updatableLists.indexOf(this.tanks);
-        if (tanks_index === -1) return;
-        this.loop.updatableLists.splice(tanks_index, 1);
+        if (tanks_index !== -1) this.loop.updatableLists.splice(tanks_index, 1);
+        const bullet_index = this.loop.updatableLists.indexOf(this.bullets);
+        if (bullet_index !== -1) this.loop.updatableLists.splice(bullet_index, 1);
     }
 
     resume() {
         const tanks_index = this.loop.updatableLists.indexOf(this.tanks);
-        if (tanks_index !== -1) return;
-        this.loop.updatableLists.push(this.tanks);
+        if (tanks_index === -1) this.loop.updatableLists.push(this.tanks);
+        const bullet_index = this.loop.updatableLists.indexOf(this.bullets);
+        if (bullet_index === -1) this.loop.updatableLists.push(this.bullets);
     }
 
     loadAssets() {
         const loader = new GLTFLoader();
         loader.load('assets/tank_model_new/scene.gltf', (gltf) => {
-            this.meshDict["Tank"] = gltf.scene;
+            this.meshDict["Tank"] = gltf.scene.children[0].clone();
         },
             (xhr) => {
                 console.log("Tank: " + (xhr.loaded / xhr.total) * 100 + '% loaded')
@@ -175,7 +203,7 @@ class World {
             });
 
         loader.load('assets/bullet_model/scene.gltf', (gltf) => {
-            this.meshDict["Bullet"] = gltf.scene;
+            this.meshDict["Bullet"] = gltf.scene.children[0].children[0].children[0].children[0].children[0].clone();
         },
             (xhr) => {
                 console.log("Bullet: ", (xhr.loaded / xhr.total) * 100 + '% loaded')
@@ -185,7 +213,7 @@ class World {
             });
 
         loader.load('assets/powerup_model/scene.gltf', (gltf) => {
-            this.meshDict["Powerup"] = gltf.scene;
+            this.meshDict["Powerup"] = gltf.scene.children[0].children[0].children[0].clone();
         },
             (xhr) => {
                 console.log("Powerup: ", (xhr.loaded / xhr.total) * 100 + '% loaded')
@@ -206,7 +234,7 @@ class World {
             this.audioDict["Explosion"] = buffer;
         });
 
-                const textureLoader = new THREE.TextureLoader();
+        const textureLoader = new THREE.TextureLoader();
         textureLoader.load('assets/grassy-meadow1-bl/grassy-meadow1_albedo.png', (texture) => {
             this.textureDict["albedo"] = texture;
         });
@@ -315,22 +343,25 @@ class World {
 
     initializePowerups(powerups: Powerup[]) {
         const healthPowerup = new HealthPowerup("main",
-            this.meshDict["Powerup"].children[0].children[0].children[0].children[9] as THREE.Group, new THREE.Vector3(100, 0, 15),
+            this.meshDict["Powerup"].children[9], new THREE.Vector3(100, 0, 15),
             this.listeners, this.audioDict["Powerup"]);
         const weaponPowerup = new WeaponPowerup("main",
-            this.meshDict["Powerup"].children[0].children[0].children[0].children[1] as THREE.Group, new THREE.Vector3(-100, 0, 15),
+            this.meshDict["Powerup"].children[1], new THREE.Vector3(-100, 0, 15),
             this.listeners, this.audioDict["Powerup"]);
         const speedPowerup = new SpeedPowerup("main",
-            this.meshDict["Powerup"].children[0].children[0].children[0].children[13] as THREE.Group, new THREE.Vector3(0, 100, 15),
+            this.meshDict["Powerup"].children[13], new THREE.Vector3(0, 100, 15),
             this.listeners, this.audioDict["Powerup"]);
         const attackPowerup = new AttackPowerup("main",
-            this.meshDict["Powerup"].children[0].children[0].children[0].children[5] as THREE.Group, new THREE.Vector3(0, -100, 15),
+            this.meshDict["Powerup"].children[5], new THREE.Vector3(0, -100, 15),
             this.listeners, this.audioDict["Powerup"]);
         const defensePowerup = new DefensePowerup("main",
-            this.meshDict["Powerup"].children[0].children[0].children[0].children[3] as THREE.Group, new THREE.Vector3(100, 100, 15),
+            this.meshDict["Powerup"].children[3], new THREE.Vector3(100, 100, 15),
             this.listeners, this.audioDict["Powerup"]);
         const penetrationPowerup = new PenetrationPowerup("main",
-            this.meshDict["Powerup"].children[0].children[0].children[0].children[7] as THREE.Group, new THREE.Vector3(-100, -100, 15),
+            this.meshDict["Powerup"].children[7], new THREE.Vector3(-100, -100, 15),
+            this.listeners, this.audioDict["Powerup"]);
+        const goalPowerup = new GoalPowerup("main",
+            this.meshDict["Powerup"].children[4], new THREE.Vector3(100, -100, 15),
             this.listeners, this.audioDict["Powerup"]);
 
         powerups.push(healthPowerup);
@@ -339,6 +370,7 @@ class World {
         powerups.push(attackPowerup);
         powerups.push(defensePowerup);
         powerups.push(penetrationPowerup);
+        powerups.push(goalPowerup);
     }
 
     initializeTanks(tanks: Tank[]) {
@@ -369,8 +401,44 @@ class World {
                 displayElement(this.instructions, 0, 1, true, 500);
                 this.pause();
                 this.status = "paused";
+            } else if (this.status == "gameover") {
+                this.status = "paused";
+                fadeElement(this.menu, 1, 0, true, 500);
+                fadeElement(this.replay, 1, 0, true, 500);
+                fadeElement(this.instructions, 1, 0, true, 500);
+                for (const element of [this.player_left_win_banner, this.player_right_win_banner, this.player_left_lost_banner, this.player_right_lost_banner]) {
+                    if (element.style.display !== 'none') {
+                        fadeElement(element, 1, 0, true, 500);
+                    }
+                }
+                this.reset();
+                this.resume();
+                this.status = "playing";
             }
         })
+        document.addEventListener("gameover", (e) => {
+            if (!(e instanceof CustomEvent)) return;
+            if (e.detail.winner == "player1") {
+                displayElement(this.player_left_win_banner, 0, 1, true, 500);
+                displayElement(this.player_right_lost_banner, 0, 1, true, 500);
+            } else if (e.detail.winner == "player2") {
+                displayElement(this.player_left_lost_banner, 0, 1, true, 500);
+                displayElement(this.player_right_win_banner, 0, 1, true, 500);
+            }
+            setTimeout(() => {
+                for (const element of [this.player_left_win_banner, this.player_right_win_banner, this.player_left_lost_banner, this.player_right_lost_banner]) {
+                    if (element.style.display !== 'none') {
+                        fadeElement(element, 1, 0, true, 1000);
+                    }
+                }
+            }, 5000);
+            this.pause();
+            this.status = "gameover";
+            displayElement(this.menu, 0, 1, true, 500);
+            displayElement(this.replay, 0, 1, true, 500);
+            displayElement(this.instructions, 0, 1, true, 500);
+        })
+
         window.addEventListener("keydown", (event) => {
             this.keyboard[event.code] = 1;
         });

@@ -24,7 +24,7 @@
 		<div class="header" id="menu">
 			<div id="banner">
 				<h1><span>Battle</span>Tanks</h1>
-				<h2>live it to the end</h2>
+				<h2>Escape the Maze to win the BATTLE</h2>
 			</div>
 		</div>
 		<div class="container" id="scene-container">
@@ -40,6 +40,16 @@
 				<div class="powerups" id="player1-powerups">
 					<!-- Power-up bars added dynamically -->
 				</div>
+				<div class="banner win-banner" id="player1-win-banner" style="display: none;">
+					<div class="banner_text">
+						<h1>YOU WIN!</h1>
+					</div>
+				</div>
+				<div class="banner lose-banner" id="player1-lose-banner" style="display: none;">
+					<div class="banner_text">
+						<h1>YOU LOSE!</h1>
+					</div>
+				</div>
 			</div>
 			<div class="sub-container" id="player2-container">
 				<div class="health" id="player2-health">
@@ -51,6 +61,16 @@
 				</div>
 				<div class="powerups" id="player2-powerups">
 					<!-- Power-up bars added dynamically -->
+				</div>
+				<div class="banner win-banner" id="player2-win-banner" style="display: none;">
+					<div class="banner_text">
+						<h1>YOU WIN!</h1>
+					</div>
+				</div>
+				<div class="banner lose-banner" id="player2-lose-banner" style="display: none;">
+					<div class="banner_text">
+						<h1>YOU LOSE!</h1>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -73,11 +93,12 @@
 			</div>
 		</div>
 	</div>
-		<footer class="footer">
-			<div class="footer__text">
-				<p>Welcome issue reports on <a href="https://github.com/EGalahad/BattleTanks-Online/issues">BattleTanks-Online</a>
-			</div>
-		</footer>
+	<footer class="footer">
+		<div class="footer__text">
+			<p>Welcome issue reports on <a
+					href="https://github.com/EGalahad/BattleTanks-Online/issues">BattleTanks-Online</a>
+		</div>
+	</footer>
 </body>
 
 

@@ -16,7 +16,7 @@ class Bullet extends MovableObject {
   attack: number;
 
   constructor(name: string, pos: THREE.Vector3, vel: THREE.Vector3, attack: number,
-    mesh: THREE.Group, rotation: THREE.Euler, listeners: THREE.AudioListener[], audio: { [key: string]: AudioBuffer }) {
+    mesh: THREE.Object3D, rotation: THREE.Euler, listeners: THREE.AudioListener[], audio: { [key: string]: AudioBuffer }) {
     super("bullet", name);
 
     this.mesh = new THREE.Group();
@@ -46,7 +46,8 @@ class Bullet extends MovableObject {
         sound.setBuffer(this.audio["Bullet_hit"]).play();
       });
 
-      this.destruct(bullets);
+      this.destruct();
+      bullets.splice(bullets.indexOf(this), 1);
       return;
     }
 
@@ -59,15 +60,11 @@ class Bullet extends MovableObject {
           sound.setBuffer(this.audio["Bullet_hit"]).play();
         });
 
-        this.destruct(bullets);
+        this.destruct();
+        bullets.splice(bullets.indexOf(this), 1);
         tank.GetAttacked(this.attack);
       }
     }
-  }
-
-  destruct(bullets: Bullet[]) {
-    this.mesh.parent?.remove(this.mesh);
-    bullets.splice(bullets.indexOf(this), 1);
   }
 
   static onTick(bullet: Bullet, delta: number) { };
