@@ -66,8 +66,10 @@ class Tank extends MovableObject {
     if (tank_mesh != null) {
       this.mesh.add(tank_mesh.clone());
       this.mesh.traverse((child) => {
-        if (child instanceof THREE.Mesh && child.material)
+        if (child instanceof THREE.Mesh && child.material) {
           this.originalColor = child.material.color.clone();
+          child.material = child.material.clone();
+        }
       });
       this.mesh.children[0].scale.set(15, 15, 15);
       this.mesh.children[0].rotation.x = 0;
