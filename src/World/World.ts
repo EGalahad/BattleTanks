@@ -36,7 +36,7 @@ class World {
 
     meshDict: { [key: string]: THREE.Object3D } = {};
     audioDict: { [key: string]: AudioBuffer } = {};
-    textureDict: { [key: string]: THREE.Texture } = {};
+    textureDict: { [key: string]: { [key: string]: THREE.Texture }} = {};
 
     listeners: THREE.AudioListener[] = [];
 
@@ -71,7 +71,7 @@ class World {
         await new Promise(resolve => setTimeout(resolve, 1000));
         this.scene = new Scene();
 
-        this.ground = new Ground("main", this.textureDict);
+        this.ground = new Ground("main", this.textureDict["ground"]);
         this.scene.add(this.ground);
 
         this.hemiLight = new HemiSphereLight("main");
@@ -235,29 +235,49 @@ class World {
         });
 
         const textureLoader = new THREE.TextureLoader();
+        this.textureDict["ground"] = {};
         textureLoader.load('assets/grassy-meadow1-bl/grassy-meadow1_albedo.png', (texture) => {
-            this.textureDict["albedo"] = texture;
+            this.textureDict["ground"]["albedo"] = texture;
         });
         textureLoader.load('assets/grassy-meadow1-bl/grassy-meadow1_ao.png', (texture) => {
-            this.textureDict["ao"] = texture;
+            this.textureDict["ground"]["ao"] = texture;
         });
         textureLoader.load('assets/grassy-meadow1-bl/grassy-meadow1_height.png', (texture) => {
-            this.textureDict["height"] = texture;
+            this.textureDict["ground"]["height"] = texture;
         });
         textureLoader.load('assets/grassy-meadow1-bl/grassy-meadow1_metallic.png', (texture) => {
-            this.textureDict["metallic"] = texture;
+            this.textureDict["ground"]["metallic"] = texture;
         });
         textureLoader.load('assets/grassy-meadow1-bl/grassy-meadow1_normal-ogl.png', (texture) => {
-            this.textureDict["normal"] = texture;
+            this.textureDict["ground"]["normal"] = texture;
         });
         textureLoader.load('assets/grassy-meadow1-bl/grassy-meadow1_roughness.png', (texture) => {
-            this.textureDict["roughness"] = texture;
+            this.textureDict["ground"]["roughness"] = texture;
         });
 
+        this.textureDict["wall"] = {};
+        textureLoader.load('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_albedo.png', (texture) => {
+            this.textureDict["wall"]["albedo"] = texture;
+        });
+        textureLoader.load('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_ao.png', (texture) => {
+            this.textureDict["wall"]["ao"] = texture;
+        });
+        textureLoader.load('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_height.png', (texture) => {
+            this.textureDict["wall"]["height"] = texture;
+        });
+        textureLoader.load('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_metallic.png', (texture) => {
+            this.textureDict["wall"]["metallic"] = texture;
+        });
+        textureLoader.load('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_normal-ogl.png', (texture) => {
+            this.textureDict["wall"]["normal"] = texture;
+        });
+        textureLoader.load('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_roughness.png', (texture) => {
+            this.textureDict["wall"]["roughness"] = texture;
+        });
     }
 
     initializeWalls(walls: any) {
-        function Maze_Initialize(size: number, margin_size: number) {
+        function Maze_Initialize(size: number, margin_size: number, textureDict: { [key: string]: THREE.Texture }) {
             let grid_cnt = size * size;
             let has_wall = new Array(grid_cnt);
             for (let i = 0; i < grid_cnt; i++) {
@@ -308,7 +328,7 @@ class World {
                 for (let j = i + 1; j < grid_cnt; j++)
                     if (has_wall[i][j]) {
                         let position = new THREE.Vector3(0, 0, 0);
-                        let rotation = new THREE.Vector3(0, 0, 0);
+                        let rotation = new THREE.Euler(0, 0, 0);
                         if (j == i + 1) {
                             position.x = -margin_size / 2 + grid_size * (j % size);
                             position.y = margin_size / 2 - grid_size * (Math.floor(j / size) + 0.5);
@@ -319,22 +339,22 @@ class World {
                             rotation.z = Math.PI / 2;
                         }
                         else console.log("Error");
-                        let wall = new Wall("main", new THREE.Vector3(20, margin_size / size + 20, 50),
+                        let wall = new Wall("main", textureDict, new THREE.Vector3(20, margin_size / size + 20, 50),
                             position, rotation);
                         walls.push(wall);
                         // console.log(i, j)
                     }
         }
         let margin_size = 1000;
-        Maze_Initialize(7, margin_size);
-        let wall1 = new Wall("main", new THREE.Vector3(20, margin_size + 20, 50),
-            new THREE.Vector3(margin_size / 2, 0, 0), new THREE.Vector3(0, 0, 0));
-        let wall2 = new Wall("main", new THREE.Vector3(20, margin_size + 20, 50),
-            new THREE.Vector3(-margin_size / 2, 0, 0), new THREE.Vector3(0, 0, 0));
-        let wall3 = new Wall("main", new THREE.Vector3(20, margin_size + 20, 50),
-            new THREE.Vector3(0, margin_size / 2, 0), new THREE.Vector3(0, 0, Math.PI / 2));
-        let wall4 = new Wall("main", new THREE.Vector3(20, margin_size + 20, 50),
-            new THREE.Vector3(0, -margin_size / 2, 0), new THREE.Vector3(0, 0, Math.PI / 2));
+        Maze_Initialize(7, margin_size, this.textureDict["wall"]);
+        let wall1 = new Wall("main", this.textureDict["wall"], new THREE.Vector3(20, margin_size + 20, 50),
+            new THREE.Vector3(margin_size / 2, 0, 0), new THREE.Euler(0, 0, 0));
+        let wall2 = new Wall("main", this.textureDict["wall"], new THREE.Vector3(20, margin_size + 20, 50),
+            new THREE.Vector3(-margin_size / 2, 0, 0), new THREE.Euler(0, 0, 0));
+        let wall3 = new Wall("main", this.textureDict["wall"], new THREE.Vector3(20, margin_size + 20, 50),
+            new THREE.Vector3(0, margin_size / 2, 0), new THREE.Euler(0, 0, Math.PI / 2));
+        let wall4 = new Wall("main", this.textureDict["wall"], new THREE.Vector3(20, margin_size + 20, 50),
+            new THREE.Vector3(0, -margin_size / 2, 0), new THREE.Euler(0, 0, Math.PI / 2));
         walls.push(wall1);
         walls.push(wall2);
         walls.push(wall3);

@@ -26,6 +26,8 @@ abstract class Powerup extends MovableObject {
     this.mesh.children[0].rotation.x = Math.PI / 2;
     this.mesh.position.copy(pos);
 
+    this.mesh.rotateZ(Math.random() * Math.PI);
+
     this.listeners = listeners;
     this.audio = audio;
   }

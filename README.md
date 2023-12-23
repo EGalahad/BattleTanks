@@ -5,6 +5,7 @@ This the the source code for the BattleTanks game. The game is a third-person vi
 The game is developed using [three.js](https://threejs.org). The game is developed as a part of the course project for the course Advanced Computer Graphics at IIIS, Tsinghua.
 
 ## RoadMap
+0. Change wall texture in `World.loadAssets()`.
 1. Audio Issue: backgorund music and sound effects.
 2. Choose appropriate powerup meshes.
 3. Add dynamically generated powerups, in `Loop.tick()`.
