@@ -6,10 +6,11 @@ The game is developed using [three.js](https://threejs.org). The game is develop
 
 ## RoadMap
 1. Audio Issue: backgorund music and sound effects.
-2. Add dynamically generated powerups, in `Loop.tick()`.
-3. Add dynamically generated initial positions for tanks, in `Tank.reset()`.
-4. Add larger range attacks, in `Bullet.update()`.
-5. Add texture to tanks and walls.
+2. Choose appropriate powerup meshes.
+3. Add dynamically generated powerups, in `Loop.tick()`.
+4. Add dynamically generated initial positions for tanks, in `Tank.reset()`.
+5. Add larger range attacks, in `Bullet.update()`.
+6. Add texture to tanks and walls.
 
 
 ## Bugs
