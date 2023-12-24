@@ -36,7 +36,7 @@ class World {
 
     meshDict: { [key: string]: THREE.Object3D } = {};
     audioDict: { [key: string]: AudioBuffer } = {};
-    textureDict: { [key: string]: { [key: string]: THREE.Texture }} = {};
+    textureDict: { [key: string]: { [key: string]: THREE.Texture } } = {};
 
     listeners: THREE.AudioListener[] = [];
 
@@ -66,9 +66,8 @@ class World {
         this.player_left_lost_banner = document.getElementById("player1-lose-banner") as HTMLElement;
         this.player_right_lost_banner = document.getElementById("player2-lose-banner") as HTMLElement;
 
-        this.loadAssets();
+        await this.loadAssets();
 
-        await new Promise(resolve => setTimeout(resolve, 1000));
         this.scene = new Scene();
 
         this.ground = new Ground("main", this.textureDict["ground"]);
@@ -190,90 +189,104 @@ class World {
         if (bullet_index === -1) this.loop.updatableLists.push(this.bullets);
     }
 
-    loadAssets() {
-        const loader = new GLTFLoader();
-        loader.load('assets/tank_model_new/scene.gltf', (gltf) => {
-            this.meshDict["Tank"] = gltf.scene.children[0].clone();
-        },
-            (xhr) => {
-                console.log("Tank: " + (xhr.loaded / xhr.total) * 100 + '% loaded')
-            },
-            (error) => {
-                console.log(error)
-            });
+    async loadAssets() {
+        let promises: Promise<any>[] = [];
 
-        loader.load('assets/bullet_model/scene.gltf', (gltf) => {
-            this.meshDict["Bullet"] = gltf.scene.children[0].children[0].children[0].children[0].children[0].clone();
-        },
-            (xhr) => {
-                console.log("Bullet: ", (xhr.loaded / xhr.total) * 100 + '% loaded')
-            },
-            (error) => {
-                console.log(error)
-            });
+        // load 3d models
+        const gltfLoader = new GLTFLoader();
+        function gltfPromise(path: string) {
+            return new Promise<THREE.Group>(
+                (resolve, reject) => {
+                    gltfLoader.load(path, (gltf) => {
+                        resolve(gltf.scene);
+                    });
+                }
+            );
+        }
+        promises.push(gltfPromise('assets/tank_model_new/scene.gltf').then((mesh) => {
+            this.meshDict["Tank"] = mesh.children[0].clone();
+        }));
+        promises.push(gltfPromise('assets/bullet_model/scene.gltf').then((mesh) => {
+            this.meshDict["Bullet"] = mesh.children[0].children[0].children[0].children[0].children[0].clone();
+        }));
+        promises.push(gltfPromise('assets/powerup_model/scene.gltf').then((mesh) => {
+            this.meshDict["Powerup"] = mesh.children[0].children[0].children[0].clone();
+        }));
 
-        loader.load('assets/powerup_model/scene.gltf', (gltf) => {
-            this.meshDict["Powerup"] = gltf.scene.children[0].children[0].children[0].clone();
-        },
-            (xhr) => {
-                console.log("Powerup: ", (xhr.loaded / xhr.total) * 100 + '% loaded')
-            },
-            (error) => {
-                console.log(error)
-            });
-
-
+        // load audios
         const audioLoader = new THREE.AudioLoader();
-        audioLoader.load('assets/audio/powerup.mp3', (buffer) => {
+        function audioPromise(path: string) {
+            return new Promise<AudioBuffer>(
+                (resolve, reject) => {
+                    audioLoader.load(path, (buffer) => {
+                        resolve(buffer);
+                    });
+                }
+            );
+        }
+        promises.push(audioPromise('assets/audio/powerup.mp3').then((buffer) => {
             this.audioDict["Powerup"] = buffer;
-        });
-        audioLoader.load('assets/audio/bullet_hit.mp3', (buffer) => {
+        }));
+        promises.push(audioPromise('assets/audio/bullet_hit.mp3').then((buffer) => {
             this.audioDict["Bullet_hit"] = buffer;
-        });
-        audioLoader.load('assets/audio/explosion.mp3', (buffer) => {
+        }));
+        promises.push(audioPromise('assets/audio/explosion.mp3').then((buffer) => {
             this.audioDict["Explosion"] = buffer;
-        });
+        }));
 
+        // load textures
         const textureLoader = new THREE.TextureLoader();
+        function texturePromise(path: string) {
+            return new Promise<THREE.Texture>(
+                (resolve, reject) => {
+                    textureLoader.load(path, (texture) => {
+                        resolve(texture);
+                    });
+                }
+            );
+        }
         this.textureDict["ground"] = {};
-        textureLoader.load('assets/grassy-meadow1-bl/grassy-meadow1_albedo.png', (texture) => {
+        promises.push(texturePromise('assets/grassy-meadow1-bl/grassy-meadow1_albedo.png').then((texture) => {
             this.textureDict["ground"]["albedo"] = texture;
-        });
-        textureLoader.load('assets/grassy-meadow1-bl/grassy-meadow1_ao.png', (texture) => {
+        }));
+        promises.push(texturePromise('assets/grassy-meadow1-bl/grassy-meadow1_ao.png').then((texture) => {
             this.textureDict["ground"]["ao"] = texture;
-        });
-        textureLoader.load('assets/grassy-meadow1-bl/grassy-meadow1_height.png', (texture) => {
+        }));
+        promises.push(texturePromise('assets/grassy-meadow1-bl/grassy-meadow1_height.png').then((texture) => {
             this.textureDict["ground"]["height"] = texture;
-        });
-        textureLoader.load('assets/grassy-meadow1-bl/grassy-meadow1_metallic.png', (texture) => {
+        }));
+        promises.push(texturePromise('assets/grassy-meadow1-bl/grassy-meadow1_metallic.png').then((texture) => {
             this.textureDict["ground"]["metallic"] = texture;
-        });
-        textureLoader.load('assets/grassy-meadow1-bl/grassy-meadow1_normal-ogl.png', (texture) => {
+        }));
+        promises.push(texturePromise('assets/grassy-meadow1-bl/grassy-meadow1_normal-ogl.png').then((texture) => {
             this.textureDict["ground"]["normal"] = texture;
-        });
-        textureLoader.load('assets/grassy-meadow1-bl/grassy-meadow1_roughness.png', (texture) => {
+        }));
+        promises.push(texturePromise('assets/grassy-meadow1-bl/grassy-meadow1_roughness.png').then((texture) => {
             this.textureDict["ground"]["roughness"] = texture;
-        });
+        }));
+
 
         this.textureDict["wall"] = {};
-        textureLoader.load('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_albedo.png', (texture) => {
+        promises.push(texturePromise('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_albedo.png').then((texture) => {
             this.textureDict["wall"]["albedo"] = texture;
-        });
-        textureLoader.load('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_ao.png', (texture) => {
+        }));
+        promises.push(texturePromise('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_ao.png').then((texture) => {
             this.textureDict["wall"]["ao"] = texture;
-        });
-        textureLoader.load('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_height.png', (texture) => {
+        }));
+        promises.push(texturePromise('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_height.png').then((texture) => {
             this.textureDict["wall"]["height"] = texture;
-        });
-        textureLoader.load('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_metallic.png', (texture) => {
+        }));
+        promises.push(texturePromise('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_metallic.png').then((texture) => {
             this.textureDict["wall"]["metallic"] = texture;
-        });
-        textureLoader.load('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_normal-ogl.png', (texture) => {
+        }));
+        promises.push(texturePromise('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_normal-ogl.png').then((texture) => {
             this.textureDict["wall"]["normal"] = texture;
-        });
-        textureLoader.load('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_roughness.png', (texture) => {
+        }));
+        promises.push(texturePromise('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_roughness.png').then((texture) => {
             this.textureDict["wall"]["roughness"] = texture;
-        });
+        }));
+        
+        await Promise.all(promises);
     }
 
     initializeWalls(walls: any) {

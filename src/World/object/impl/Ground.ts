@@ -4,7 +4,7 @@ import * as THREE from "three";
 class Ground extends BaseObject {
   mesh: THREE.Mesh;
   planeSize: number;
-  constructor(name: string, textures: { [key: string]: THREE.Texture}) {
+  constructor(name: string, textures: { [key: string]: THREE.Texture }) {
     super("ground", name);
     function repeat_texture(
       texture: THREE.Texture,
