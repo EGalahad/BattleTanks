@@ -267,24 +267,24 @@ class World {
 
 
         this.textureDict["wall"] = {};
-        promises.push(texturePromise('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_albedo.png').then((texture) => {
-            this.textureDict["wall"]["albedo"] = texture;
-        }));
-        promises.push(texturePromise('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_ao.png').then((texture) => {
-            this.textureDict["wall"]["ao"] = texture;
-        }));
-        promises.push(texturePromise('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_height.png').then((texture) => {
-            this.textureDict["wall"]["height"] = texture;
-        }));
-        promises.push(texturePromise('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_metallic.png').then((texture) => {
-            this.textureDict["wall"]["metallic"] = texture;
-        }));
-        promises.push(texturePromise('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_normal-ogl.png').then((texture) => {
-            this.textureDict["wall"]["normal"] = texture;
-        }));
-        promises.push(texturePromise('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_roughness.png').then((texture) => {
-            this.textureDict["wall"]["roughness"] = texture;
-        }));
+        // promises.push(texturePromise('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_albedo.png').then((texture) => {
+        //     this.textureDict["wall"]["albedo"] = texture;
+        // }));
+        // promises.push(texturePromise('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_ao.png').then((texture) => {
+        //     this.textureDict["wall"]["ao"] = texture;
+        // }));
+        // promises.push(texturePromise('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_height.png').then((texture) => {
+        //     this.textureDict["wall"]["height"] = texture;
+        // }));
+        // promises.push(texturePromise('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_metallic.png').then((texture) => {
+        //     this.textureDict["wall"]["metallic"] = texture;
+        // }));
+        // promises.push(texturePromise('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_normal-ogl.png').then((texture) => {
+        //     this.textureDict["wall"]["normal"] = texture;
+        // }));
+        // promises.push(texturePromise('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_roughness.png').then((texture) => {
+        //     this.textureDict["wall"]["roughness"] = texture;
+        // }));
         
         await Promise.all(promises);
     }
