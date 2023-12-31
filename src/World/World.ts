@@ -100,8 +100,6 @@ class World {
             camera.camera.add(listener);
             this.listeners.push(listener);
 
-            const bgAudio = new THREE.Audio(listener);
-            bgAudio.setBuffer(this.audioDict["bgm"]).setLoop(true).play();
         }
 
         // mix the two listeners
@@ -167,11 +165,18 @@ class World {
         }
 
         Powerup.onTick = (powerup: Powerup, delta: number) => {
-            powerup.update(this.powerups, this.tanks);
+            powerup.update(this.powerups, this.tanks, this.walls);
         }
     }
 
     start() {
+        const startAudio = () => {
+        const bgAudio = new THREE.Audio(this.listeners[0]);
+        bgAudio.setBuffer(this.audioDict["Bgm"]).setVolume(0.1).setLoop(true).play();
+        document.removeEventListener('click', startAudio);
+    };
+
+        document.addEventListener('click', startAudio);
         this.loop.start();
     }
 
@@ -232,6 +237,9 @@ class World {
         }));
         promises.push(audioPromise('assets/audio/explosion.mp3').then((buffer) => {
             this.audioDict["Explosion"] = buffer;
+        }));
+        promises.push(audioPromise('assets/audio/bgm.mp3').then((buffer) => {
+            this.audioDict["Bgm"] = buffer;
         }));
 
         // load textures
@@ -358,14 +366,14 @@ class World {
                         // console.log(i, j)
                     }
         }
-        let margin_size = 1000;
-        Maze_Initialize(7, margin_size, this.textureDict["wall"]);
+        let margin_size = 1500;
+        Maze_Initialize(8, margin_size, this.textureDict["wall"]);
         let wall1 = new Wall("main", this.textureDict["wall"], new THREE.Vector3(20, margin_size + 20, 50),
             new THREE.Vector3(margin_size / 2, 0, 0), new THREE.Euler(0, 0, 0));
         let wall2 = new Wall("main", this.textureDict["wall"], new THREE.Vector3(20, margin_size + 20, 50),
             new THREE.Vector3(-margin_size / 2, 0, 0), new THREE.Euler(0, 0, 0));
-        let wall3 = new Wall("main", this.textureDict["wall"], new THREE.Vector3(20, margin_size + 20, 50),
-            new THREE.Vector3(0, margin_size / 2, 0), new THREE.Euler(0, 0, Math.PI / 2));
+        let wall3 = new Wall("main", this.textureDict["wall"], new THREE.Vector3(20, margin_size - 200, 50),
+            new THREE.Vector3(100, margin_size / 2, 0), new THREE.Euler(0, 0, Math.PI / 2));
         let wall4 = new Wall("main", this.textureDict["wall"], new THREE.Vector3(20, margin_size + 20, 50),
             new THREE.Vector3(0, -margin_size / 2, 0), new THREE.Euler(0, 0, Math.PI / 2));
         walls.push(wall1);
@@ -376,25 +384,25 @@ class World {
 
     initializePowerups(powerups: Powerup[]) {
         const healthPowerup = new HealthPowerup("main",
-            this.meshDict["Powerup"].children[9], new THREE.Vector3(100, 0, 15),
+            this.meshDict["Powerup"].children[9], new THREE.Vector3(300, 50, 15),
             this.listeners, this.audioDict["Powerup"]);
         const weaponPowerup = new WeaponPowerup("main",
-            this.meshDict["Powerup"].children[1], new THREE.Vector3(-100, 0, 15),
+            this.meshDict["Powerup"].children[1], new THREE.Vector3(-300, 50, 15),
             this.listeners, this.audioDict["Powerup"]);
         const speedPowerup = new SpeedPowerup("main",
-            this.meshDict["Powerup"].children[13], new THREE.Vector3(0, 100, 15),
+            this.meshDict["Powerup"].children[13], new THREE.Vector3(450, -450, 15),
             this.listeners, this.audioDict["Powerup"]);
         const attackPowerup = new AttackPowerup("main",
-            this.meshDict["Powerup"].children[5], new THREE.Vector3(0, -100, 15),
+            this.meshDict["Powerup"].children[2], new THREE.Vector3(50, -100, 15),
             this.listeners, this.audioDict["Powerup"]);
         const defensePowerup = new DefensePowerup("main",
-            this.meshDict["Powerup"].children[3], new THREE.Vector3(100, 100, 15),
+            this.meshDict["Powerup"].children[0], new THREE.Vector3(50, 50, 15),
             this.listeners, this.audioDict["Powerup"]);
         const penetrationPowerup = new PenetrationPowerup("main",
-            this.meshDict["Powerup"].children[7], new THREE.Vector3(-100, -100, 15),
+            this.meshDict["Powerup"].children[11], new THREE.Vector3(-300, -300, 15),
             this.listeners, this.audioDict["Powerup"]);
         const goalPowerup = new GoalPowerup("main",
-            this.meshDict["Powerup"].children[4], new THREE.Vector3(100, -100, 15),
+            this.meshDict["Powerup"].children[3], new THREE.Vector3(-750, 800, 15),
             this.listeners, this.audioDict["Powerup"]);
 
         powerups.push(healthPowerup);

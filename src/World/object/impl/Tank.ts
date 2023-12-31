@@ -79,7 +79,7 @@ class Tank extends MovableObject {
 
       this.mesh.castShadow = true;
       this.mesh.receiveShadow = true;
-      this.mesh.position.z = 0;
+      this.mesh.position.set(625, -625, 0);
     }
 
     if (name == "player2") {
@@ -240,14 +240,23 @@ class Tank extends MovableObject {
     this.attack = 10;
     this.defense = 0;
     this.bulletUpgraded = false;
-    this.penetrationUpgraded = false;
-    this.penetrationPermitted = false;
+    this.penetrationUpgraded = true;
+    this.penetrationPermitted = true;
+    setTimeout(() => {
+      this.penetrationUpgraded = false;
+      // this.penetrationPermitted = false;
+    }, 500);
     this.mesh.children[0].traverse((child) => {
       if (child instanceof THREE.Mesh && child.material) {
         child.material.color.copy(this.originalColor);
       }
     });
     Object.values(this.powerups).forEach(pbar => pbar.remove());
+    for (const key in this.powerups) {
+        delete this.powerups[key];
+        this.powerupPostHooks[key](this);
+        delete this.powerupPostHooks[key];
+    }
     this.powerups = {};
     this.powerupPostHooks = {};
   }

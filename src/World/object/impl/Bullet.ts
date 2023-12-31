@@ -43,7 +43,7 @@ class Bullet extends MovableObject {
     if (this.mesh.position.z < 0 || walls.some(wall => checkCollisionBulletWithWall(this, wall) || !ground.inBoundary(this.mesh.position))) {
       this.listeners.forEach(listener => {
         const sound = new THREE.PositionalAudio(listener);
-        sound.setBuffer(this.audio["Bullet_hit"]).play();
+        sound.setBuffer(this.audio["Bullet_hit"]).setVolume(3).play();
       });
 
       this.destruct();
@@ -57,7 +57,7 @@ class Bullet extends MovableObject {
       if (checkCollisionBulletWithTank(this, tank)) {
         this.listeners.forEach(listener => {
           const sound = new THREE.PositionalAudio(listener);
-          sound.setBuffer(this.audio["Bullet_hit"]).play();
+          sound.setBuffer(this.audio["Bullet_hit"]).setVolume(1).play();
         });
 
         this.destruct();

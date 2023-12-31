@@ -60,4 +60,11 @@ function checkCollisionPowerupWithTank(powerup: Powerup, tank: Tank) {
   return obb.intersectsBox3(box3);
 }
 
-export { checkCollisionTankWithWall, checkCollisionTankWithTank, checkCollisionBulletWithTank, checkCollisionBulletWithWall, checkCollisionPowerupWithTank }
+
+function checkCollisionPowerupWithWall(powerup: Powerup, wall: Wall) {
+  const powerup_box = new THREE.Box3().setFromObject(powerup.mesh);
+  const wall_box = new THREE.Box3().setFromObject(wall.mesh);
+  return powerup_box.intersectsBox(wall_box);
+}
+
+export { checkCollisionTankWithWall, checkCollisionTankWithTank, checkCollisionBulletWithTank, checkCollisionBulletWithWall, checkCollisionPowerupWithTank, checkCollisionPowerupWithWall }

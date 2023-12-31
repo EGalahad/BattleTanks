@@ -1,8 +1,10 @@
 import * as THREE from "three";
 import { MovableObject } from "../BaseObject";
 import { Tank } from "./Tank";
-import { checkCollisionPowerupWithTank } from "../../utils/collision";
+import { checkCollisionPowerupWithTank, checkCollisionPowerupWithWall } from "../../utils/collision";
 import { disposeMeshes } from "../../utils/mesh";
+import { Loop } from "../../system/Loop";
+import { Wall } from "./Wall";
 
 abstract class Powerup extends MovableObject {
   powerup_type: string;
@@ -16,7 +18,8 @@ abstract class Powerup extends MovableObject {
   zBounds: number[] = [10, 20];
   changeZDirection: boolean = false;
 
-  constructor(name: string, type: string, mesh: THREE.Object3D, pos: THREE.Vector3, listeners: THREE.AudioListener[], audio: AudioBuffer) {
+  constructor(name: string, type: string, mesh: THREE.Object3D, pos: THREE.Vector3, 
+      listeners: THREE.AudioListener[], audio: AudioBuffer) {
     super(`powerup-${type}`, name);
     this.powerup_type = type;
 
@@ -32,17 +35,30 @@ abstract class Powerup extends MovableObject {
     this.audio = audio;
   }
 
-  update(powerups: Powerup[], tanks: Tank[]) {
+  update(powerups: Powerup[], tanks: Tank[], walls: Wall[]) {
     for (const tank of tanks) {
       if (checkCollisionPowerupWithTank(this, tank)) {
         this.listeners.forEach(listener => {
           const sound = new THREE.PositionalAudio(listener);
-          sound.setBuffer(this.audio).play();
+          sound.setBuffer(this.audio).setVolume(20).play();
         });
-
+        let new_position;
+        let is_collide = true;
+        while (is_collide) { 
+          new_position = new THREE.Vector3(Math.random() * 1000 - 500, Math.random() * 1000 - 500, 15)
+          let no_collide = true;
+          for (let wall of walls) {
+            if (checkCollisionPowerupWithWall(this, wall)) {
+              no_collide = false;
+              break;
+            }
+          }
+          is_collide = !no_collide;
+        }
+        this.mesh.position.copy(new_position);
         this.apply(tank);
-        this.destruct();
-        powerups.splice(powerups.indexOf(this), 1);
+        // this.destruct();
+        // powerups.splice(powerups.indexOf(this), 1);
         return
       }
     }
