@@ -40,6 +40,7 @@ class World {
     textureDict: { [key: string]: { [key: string]: THREE.Texture } } = {};
 
     listeners: THREE.AudioListener[] = [];
+    bgAudios: THREE.Audio[] = [];
 
     // HTML elements
     sceneContainer: HTMLElement;
@@ -100,7 +101,10 @@ class World {
             const listener = new THREE.AudioListener();
             camera.camera.add(listener);
             this.listeners.push(listener);
-
+            
+            const bgAudio = new THREE.Audio(listener);
+            bgAudio.setBuffer(this.audioDict["Bgm"]).setVolume(0.01).setLoop(true);
+            this.bgAudios.push(bgAudio);
         }
 
         // mix the two listeners
@@ -173,17 +177,11 @@ class World {
     }
 
     start() {
-        const startAudio = () => {
-        const bgAudio = new THREE.Audio(this.listeners[0]);
-        bgAudio.setBuffer(this.audioDict["Bgm"]).setVolume(0.01).setLoop(true).play();
-        document.removeEventListener('click', startAudio);
-    };
-
-        document.addEventListener('click', startAudio);
         this.loop.start();
     }
 
     pause() {
+        this.bgAudios.forEach(bgAudio => bgAudio.pause());
         const tanks_index = this.loop.updatableLists.indexOf(this.tanks);
         if (tanks_index !== -1) this.loop.updatableLists.splice(tanks_index, 1);
         const bullet_index = this.loop.updatableLists.indexOf(this.bullets);
@@ -191,6 +189,7 @@ class World {
     }
 
     resume() {
+        this.bgAudios.forEach(bgAudio => bgAudio.play());
         const tanks_index = this.loop.updatableLists.indexOf(this.tanks);
         if (tanks_index === -1) this.loop.updatableLists.push(this.tanks);
         const bullet_index = this.loop.updatableLists.indexOf(this.bullets);
@@ -296,7 +295,7 @@ class World {
         // promises.push(texturePromise('assets/eroded-smoothed-rockface-bl/eroded-smoothed-rockface_roughness.png').then((texture) => {
         //     this.textureDict["wall"]["roughness"] = texture;
         // }));
-        
+
         await Promise.all(promises);
     }
 
