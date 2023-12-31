@@ -12,7 +12,7 @@
 
 .header h1 {
   position: absolute;
-  top: 10vh;
+  top: 5vh;
   left: 35vw;
   display: inline-block;
   font-family: 'Playfair Display';
@@ -35,7 +35,7 @@
 
 .header h2 {
   position: absolute;
-  top: 45vh;
+  top: 40vh;
   width: 100vw;
 
   text-align: center;
@@ -47,6 +47,12 @@
   color: #0f9b9b;
 
   z-index: inherit;
+}
+
+.powerup_img {
+  width: auto;
+  height: 6vh;
+  vertical-align: middle;
 }
 
 .banner {
