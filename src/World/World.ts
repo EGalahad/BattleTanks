@@ -175,7 +175,7 @@ class World {
     start() {
         const startAudio = () => {
         const bgAudio = new THREE.Audio(this.listeners[0]);
-        bgAudio.setBuffer(this.audioDict["Bgm"]).setVolume(0.1).setLoop(true).play();
+        bgAudio.setBuffer(this.audioDict["Bgm"]).setVolume(0.01).setLoop(true).play();
         document.removeEventListener('click', startAudio);
     };
 

@@ -40,7 +40,7 @@ abstract class Powerup extends MovableObject {
       if (checkCollisionPowerupWithTank(this, tank)) {
         this.listeners.forEach(listener => {
           const sound = new THREE.PositionalAudio(listener);
-          sound.setBuffer(this.audio).setVolume(20).play();
+          sound.setBuffer(this.audio).setVolume(200).play();
         });
         let new_position;
         let is_collide = true;
