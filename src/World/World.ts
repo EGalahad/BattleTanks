@@ -25,6 +25,7 @@ class World {
     directLight: DirectionalLight;
 
     walls: Wall[] = [];
+    surrounding_walls: Wall[] = [];
     powerups: Powerup[] = [];
     tanks: Tank[] = [];
     bullets: Bullet[] = [];
@@ -141,14 +142,16 @@ class World {
         if (bullet_index !== -1) this.loop.updatableLists.splice(bullet_index, 1);
 
         this.walls.forEach(wall => wall.destruct());
+        this.surrounding_walls.forEach(wall => wall.destruct());
         this.powerups.forEach(powerup => powerup.destruct());
         this.bullets.forEach(bullet => bullet.destruct());
 
         this.walls = [];
+        this.surrounding_walls = [];
         this.powerups = [];
         this.bullets = [];
 
-        this.initializeWalls(this.walls);
+        this.initializeWalls(this.walls, this.surrounding_walls);
         this.initializePowerups(this.powerups);
         this.walls.forEach(wall => this.scene.add(wall));
         this.powerups.forEach(powerup => this.scene.add(powerup));
@@ -157,7 +160,7 @@ class World {
         this.loop.updatableLists.push(this.bullets);
 
         Tank.onTick = (tank: Tank, delta: number) => {
-            tank.update(this.keyboard, this.scene, this.tanks, this.walls, this.bullets, delta);
+            tank.update(this.keyboard, this.scene, this.tanks, this.walls, this.surrounding_walls, this.bullets, delta);
         }
 
         Bullet.onTick = (bullet: Bullet, delta: number) => {
@@ -297,7 +300,7 @@ class World {
         await Promise.all(promises);
     }
 
-    initializeWalls(walls: any) {
+    initializeWalls(walls: any, surrounding_walls: any) {
         function Maze_Initialize(size: number, margin_size: number, textureDict: { [key: string]: THREE.Texture }) {
             let grid_cnt = size * size;
             let has_wall = new Array(grid_cnt);
@@ -368,18 +371,22 @@ class World {
         }
         let margin_size = 1500;
         Maze_Initialize(8, margin_size, this.textureDict["wall"]);
-        let wall1 = new Wall("main", this.textureDict["wall"], new THREE.Vector3(20, margin_size + 20, 50),
+        let wall1 = new Wall("main", this.textureDict["wall"], new THREE.Vector3(20, margin_size + 20, 100),
             new THREE.Vector3(margin_size / 2, 0, 0), new THREE.Euler(0, 0, 0));
-        let wall2 = new Wall("main", this.textureDict["wall"], new THREE.Vector3(20, margin_size + 20, 50),
+        let wall2 = new Wall("main", this.textureDict["wall"], new THREE.Vector3(20, margin_size + 20, 100),
             new THREE.Vector3(-margin_size / 2, 0, 0), new THREE.Euler(0, 0, 0));
-        let wall3 = new Wall("main", this.textureDict["wall"], new THREE.Vector3(20, margin_size - 200, 50),
+        let wall3 = new Wall("main", this.textureDict["wall"], new THREE.Vector3(20, margin_size - 200, 100),
             new THREE.Vector3(100, margin_size / 2, 0), new THREE.Euler(0, 0, Math.PI / 2));
-        let wall4 = new Wall("main", this.textureDict["wall"], new THREE.Vector3(20, margin_size + 20, 50),
+        let wall4 = new Wall("main", this.textureDict["wall"], new THREE.Vector3(20, margin_size + 20, 100),
             new THREE.Vector3(0, -margin_size / 2, 0), new THREE.Euler(0, 0, Math.PI / 2));
         walls.push(wall1);
         walls.push(wall2);
         walls.push(wall3);
         walls.push(wall4);
+        surrounding_walls.push(wall1);
+        surrounding_walls.push(wall2);
+        surrounding_walls.push(wall3);
+        surrounding_walls.push(wall4);
     }
 
     initializePowerups(powerups: Powerup[]) {

@@ -46,6 +46,7 @@ abstract class Powerup extends MovableObject {
         let is_collide = true;
         while (is_collide) { 
           new_position = new THREE.Vector3(Math.random() * 1000 - 500, Math.random() * 1000 - 500, 15)
+          this.mesh.position.copy(new_position);
           let no_collide = true;
           for (let wall of walls) {
             if (checkCollisionPowerupWithWall(this, wall)) {
@@ -55,7 +56,7 @@ abstract class Powerup extends MovableObject {
           }
           is_collide = !no_collide;
         }
-        this.mesh.position.copy(new_position);
+        // this.mesh.position.copy(new_position);
         this.apply(tank);
         // this.destruct();
         // powerups.splice(powerups.indexOf(this), 1);

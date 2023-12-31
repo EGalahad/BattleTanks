@@ -114,14 +114,17 @@ class Tank extends MovableObject {
     this.rotate = ((keyboard[this.rotateLeftKey] || 0) - (keyboard[this.rotateRightKey] || 0)) * delta;
   }
 
-  _updatePosition(walls: Wall[], tanks: Tank[]) {
+  _updatePosition(walls: Wall[], tanks: Tank[], surrounding_walls: Wall[]) {
     const tank_object_tmp = new Tank("temp", null, null, null, null);
     tank_object_tmp.mesh.applyMatrix4(this.mesh.matrix);
     tank_object_tmp.mesh.translateY(this.proceed * this.proceedSpeed);
     tank_object_tmp.mesh.rotateZ(this.rotate * this.rotateSpeed);
     tank_object_tmp.mesh.updateMatrix();
 
-    if (this.penetrationUpgraded) {
+    const not_collided_with_surrounding_walls = 
+      (!surrounding_walls.some((wall) => checkCollisionTankWithWall(tank_object_tmp, wall)));
+
+    if (this.penetrationUpgraded && not_collided_with_surrounding_walls) {
       this.mesh.translateY(this.proceed * this.proceedSpeed);
       this.mesh.rotateZ(this.rotate * this.rotateSpeed);
       return
@@ -131,7 +134,7 @@ class Tank extends MovableObject {
       && checkCollisionTankWithTank(tank_object_tmp, tank)))
       && !walls.some((wall) => checkCollisionTankWithWall(tank_object_tmp, wall)));
     
-    if (this.penetrationPermitted || not_collided) {
+    if (this.penetrationPermitted && not_collided_with_surrounding_walls || not_collided) {
       this.mesh.translateY(this.proceed * this.proceedSpeed);
       this.mesh.rotateZ(this.rotate * this.rotateSpeed);
 
@@ -195,11 +198,12 @@ class Tank extends MovableObject {
     scene: Scene,
     tanks: Tank[],
     walls: Wall[],
+    surrounding_walls: Wall[],
     bullets: Bullet[],
     delta: number
   ) {
     this._updateSpeed(keyboard, delta);
-    this._updatePosition(walls, tanks);
+    this._updatePosition(walls, tanks, surrounding_walls);
     this._createBullets(keyboard, bullets, scene);
   }
 
