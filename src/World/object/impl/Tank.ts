@@ -14,7 +14,7 @@ class Tank extends MovableObject {
   // bullet configuration
   bulletLocalPos: THREE.Vector3 = new THREE.Vector3(0, 40, 20);
   bulletLocalDir: THREE.Vector3 = new THREE.Vector3(0, Math.cos(Math.PI / 6), Math.sin(Math.PI / 6));
-  bulletSpeed: number = 150;
+  bulletSpeed: number = 300;
 
   // key bindings
   proceedUpKey: string = "ArrowUp";
@@ -46,7 +46,7 @@ class Tank extends MovableObject {
   // tank tick is responsible for checking if the powerup is expired and remove it
   powerups: { [key: string]: PBar } = {};
   powerupPostHooks: { [key: string]: (tank: Tank) => void } = {};
-  
+
   // powerup related state variables
   attack: number = 10;
   defense: number = 0;
@@ -57,7 +57,7 @@ class Tank extends MovableObject {
   rotateSpeed: number = 1;
 
   constructor(name: string, tank_mesh: THREE.Object3D | null,
-    bullet_mesh: THREE.Object3D | null, listeners: THREE.AudioListener[] | null, 
+    bullet_mesh: THREE.Object3D | null, listeners: THREE.AudioListener[] | null,
     audio: { [key: string]: AudioBuffer } | null, config: Partial<Tank> = {}) {
     super("tank", name);
     Object.assign(this, config);
@@ -121,7 +121,7 @@ class Tank extends MovableObject {
     tank_object_tmp.mesh.rotateZ(this.rotate * this.rotateSpeed);
     tank_object_tmp.mesh.updateMatrix();
 
-    const not_collided_with_surrounding_walls = 
+    const not_collided_with_surrounding_walls =
       (!surrounding_walls.some((wall) => checkCollisionTankWithWall(tank_object_tmp, wall)));
 
     if (this.penetrationUpgraded && not_collided_with_surrounding_walls) {
@@ -133,7 +133,7 @@ class Tank extends MovableObject {
     const not_collided = (!tanks.some((tank) => (tank.name !== this.name
       && checkCollisionTankWithTank(tank_object_tmp, tank)))
       && !walls.some((wall) => checkCollisionTankWithWall(tank_object_tmp, wall)));
-    
+
     if (this.penetrationPermitted && not_collided_with_surrounding_walls || not_collided) {
       this.mesh.translateY(this.proceed * this.proceedSpeed);
       this.mesh.rotateZ(this.rotate * this.rotateSpeed);
@@ -160,9 +160,10 @@ class Tank extends MovableObject {
       const now = Date.now();
       if (!this.firingKeyPressed && now - this.lastFireTime > 100) {
         const { pos, vel } = this._getBulletInitState();
+        this.proceed = (keyboard[this.proceedUpKey] || 0) - (keyboard[this.proceedDownKey] || 0);
+        const tankVel = new THREE.Vector3(0, 1, 0).applyEuler(this.mesh.rotation).multiplyScalar(this.proceed * this.proceedSpeed);
         if (!this.bulletUpgraded) {
-          const bullet = new Bullet("main", pos, vel, this.attack, this.bullet_mesh,
-            this.mesh.rotation, this.listeners, this.audio);
+          const bullet = new Bullet("main", pos, vel.add(tankVel), this.attack, this.bullet_mesh, this.mesh.rotation, this.listeners, this.audio);
           bullets.push(bullet);
           scene.add(bullet);
         } else {
@@ -171,12 +172,12 @@ class Tank extends MovableObject {
             applyEuler(this.mesh.rotation).multiplyScalar(this.bulletSpeed);
           let vel3 = new THREE.Vector3(0.2, Math.cos(Math.PI / 6), Math.sin(Math.PI / 6)).
             applyEuler(this.mesh.rotation).multiplyScalar(this.bulletSpeed);
-          const bullet1 = new Bullet("main", pos, vel, this.attack, this.bullet_mesh,
+          const bullet1 = new Bullet("main", pos, vel.add(tankVel), this.attack, this.bullet_mesh,
             this.mesh.rotation, this.listeners, this.audio);
-          const bullet2 = new Bullet("main", pos, vel2, this.attack, this.bullet_mesh,
+          const bullet2 = new Bullet("main", pos, vel2.add(tankVel), this.attack, this.bullet_mesh,
             new THREE.Euler(this.mesh.rotation.x, this.mesh.rotation.y, this.mesh.rotation.z + Math.PI / 6),
             this.listeners, this.audio);
-          const bullet3 = new Bullet("main", pos, vel3, this.attack, this.bullet_mesh,
+          const bullet3 = new Bullet("main", pos, vel3.add(tankVel), this.attack, this.bullet_mesh,
             new THREE.Euler(this.mesh.rotation.x, this.mesh.rotation.y, this.mesh.rotation.z - Math.PI / 6),
             this.listeners, this.audio);
           bullets.push(bullet1, bullet2, bullet3);
@@ -257,9 +258,9 @@ class Tank extends MovableObject {
     });
     Object.values(this.powerups).forEach(pbar => pbar.remove());
     for (const key in this.powerups) {
-        delete this.powerups[key];
-        this.powerupPostHooks[key](this);
-        delete this.powerupPostHooks[key];
+      delete this.powerups[key];
+      this.powerupPostHooks[key](this);
+      delete this.powerupPostHooks[key];
     }
     this.powerups = {};
     this.powerupPostHooks = {};

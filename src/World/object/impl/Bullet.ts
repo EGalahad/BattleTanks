@@ -33,7 +33,7 @@ class Bullet extends MovableObject {
     this.audio = audio;
 
     this.vel = vel;
-    this.accel = new THREE.Vector3(0, 0, -100);
+    this.accel = new THREE.Vector3(0, 0, -600);
 
     this.attack = attack
   }
