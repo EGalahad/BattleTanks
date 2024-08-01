@@ -1,4 +1,6 @@
-# BattleTanks
+# BattleTanks: a 3D battle tank game based on threejs.
+
+Try it on [https://egalahad.github.io/BattleTanks/](https://egalahad.github.io/BattleTanks/)!
 
 This the the source code for the BattleTanks game. The game is a third-person view, 3D rendered, two-player tank battle game. Unique gameplay elements such as health, speed, penetration and weapon enhancement power-ups. The user need to go through the maze of walls before the opponent to win the game, if the tank is destroyed, it we be reset to the initial position.
 
